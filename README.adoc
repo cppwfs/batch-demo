@@ -1,0 +1,13 @@
+==  Introduction
+
+This project demonstrates how Spring Cloud Task and Spring Batch.
+
+== Build the project
+
+=== To build the demo project
+
+```
+./mvnw clean package
+```
+
+ 
