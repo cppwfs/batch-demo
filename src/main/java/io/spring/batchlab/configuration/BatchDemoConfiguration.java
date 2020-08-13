@@ -17,22 +17,16 @@
 package io.spring.batchlab.configuration;
 
 import io.spring.batchlab.BatchLabProperties;
-import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.batch.core.Job;
-import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepContribution;
-import org.springframework.batch.core.configuration.annotation.BatchConfigurer;
-import org.springframework.batch.core.configuration.annotation.DefaultBatchConfigurer;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
-import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
-import org.springframework.batch.core.launch.support.SimpleJobLauncher;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
@@ -40,15 +34,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.task.configuration.EnableTask;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
 @EnableBatchProcessing
 @Configuration
 @EnableTask
 public class BatchDemoConfiguration {
 
-	@Autowired
-	BatchLabProperties batchLabProperties;
+	@Bean
+	public BatchLabProperties batchLabProperties() {
+		return new BatchLabProperties();
+	}
 
 	private static final Log logger = LogFactory.getLog(BatchDemoConfiguration.class);
 
@@ -60,16 +55,18 @@ public class BatchDemoConfiguration {
 	public StepBuilderFactory stepBuilderFactory;
 
 	@Bean
-	public Job job1() {
+	public Job pausedemo(BatchLabProperties batchLabProperties) {
 		SimpleJobBuilder jobBuilder =  jobBuilderFactory.get(batchLabProperties.getBatchName())
-				.start(stepBuilderFactory.get("job1stepX")
+				.start(stepBuilderFactory.get("pausedemo")
 						.tasklet(new Tasklet() {
 							@Override
 							public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
 								logger.info("Job1 is sleeping");
-								Thread.sleep(30000);
+								logger.info("********ONE********");
+//								Thread.sleep(30000);
 								logger.info("Job1 was finishing");
-								return RepeatStatus.FINISHED;
+								throw new IllegalStateException("whoops");
+//								return RepeatStatus.FINISHED;
 							}
 						})
 						.build()).incrementer(new RunIdIncrementer());
