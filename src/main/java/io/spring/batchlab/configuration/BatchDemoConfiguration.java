@@ -65,8 +65,8 @@ public class BatchDemoConfiguration {
 								logger.info("********ONE********");
 //								Thread.sleep(30000);
 								logger.info("Job1 was finishing");
-								throw new IllegalStateException("whoops");
-//								return RepeatStatus.FINISHED;
+//								throw new IllegalStateException("whoops");
+								return RepeatStatus.FINISHED;
 							}
 						})
 						.build()).incrementer(new RunIdIncrementer());
