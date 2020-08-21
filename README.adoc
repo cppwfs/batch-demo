@@ -1,6 +1,6 @@
 ==  Introduction
 
-This project launches a batch job that pauses for 30 seconds.
+This project reads purchase_orders from a mongo repository and identifies the credit card type and writes the results to a relational table.
 
 == Build the project
 
@@ -15,11 +15,26 @@ This project launches a batch job that pauses for 30 seconds.
 ./mvnw -DskipTests -U package dockerfile:build
 ```
 
+=== Create the output table required for the demo
+Use the following DDL to create the table for a MySql DB
+```
+CREATE TABLE credit_transaction
+(
+   clicks int(11),
+   zone varchar(255),
+   sku bigint(11),
+   quantity int(11),
+   amount decimal(6,2),
+   mode varchar(255),
+   card_type varchar(255)
+)
+;
+```
 
-=== Re-using the docker image build components
-In the case you are using this example to see how to dockerize your batch app:
-
-1. Copy the Dockerfile from this project and update the jar file that is used in this case its `batchdemo-0.0.1-SNAPSHOT.jar`.
-2. Open the pom.xml and copy the spotify plugin to your pom.
-3. Copy  the `docker.image.prefix` and the `dockerfile-maven-plugin.version` properties.
- 
+The format of the data that should be stored for purchase_orders should be as follows:
+```
+db.purchase_orders.save({ "_id" : ObjectId("5f3eb5cc81f1470001036957"), "clicks" : "12", "zone" : "west-1", "sku" : "102453548", "amount" : "9.99", "quantity" : "3", "mode" : "credit" })
+db.purchase_orders.save({ "_id" : ObjectId("5f3ebb0d81f1470001036958"), "clicks" : "12", "zone" : "west-1", "sku" : "102453548", "amount" : "9.99", "quantity" : "3", "mode" : "credit" })
+db.purchase_orders.save({ "_id" : ObjectId("5f3ebb5781f1470001036959"), "clicks" : "12", "zone" : "west-1", "sku" : "102453548", "amount" : "9.99", "quantity" : "3", "mode" : "credit" })
+db.purchase_orders.find();
+```
