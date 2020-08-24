@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import javax.sql.DataSource;
-import org.bson.types.ObjectId;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -56,14 +55,18 @@ public class BatchMongoConfiguration {
 
 	@Bean
 	public Job readReport(Step step) {
-		return jobBuilderFactory.get("readReport").incrementer(new RunIdIncrementer()).flow(step).end().build();
+		return jobBuilderFactory.get("readReport").
+				incrementer(new RunIdIncrementer()).
+				flow(step).end().build();
 	}
 
 	@Bean
 	public Step step1(ItemReader itemReader, ItemProcessor itemProcessor, ItemWriter itemWriter) {
-		return stepBuilderFactory.get("step1").<Map<Object, Object>, Map<Object, Object>>chunk(10).reader(itemReader)
-				.processor(itemProcessor)
-				.writer(itemWriter).build();
+		return stepBuilderFactory.get("step1").
+				<Map<Object, Object>, Map<Object, Object>>chunk(10).
+				reader(itemReader).
+				processor(itemProcessor).
+				writer(itemWriter).build();
 	}
 	@Bean
 	public ItemReader<Map<Object, Object>> itemReader() {
@@ -78,19 +81,11 @@ public class BatchMongoConfiguration {
 	}
 
 	@Bean
-	public ItemProcessor<Map<Object,Object>, Map<Object,Object>> itemProcessor() {
-		return new ItemProcessor<Map<Object,Object>, Map<Object,Object>>() {
+	public ItemProcessor<Map<Object, Object>, Map<Object, Object>> itemProcessor() {
+		return new ItemProcessor<Map<Object, Object>, Map<Object, Object>>() {
 			@Override
-			public Map<Object,Object> process(Map<Object,Object> item) throws Exception {
-				if(((ObjectId)item.get("_id")).toString().endsWith("7")) {
-					item.put("card_type", "visa");
-				}
-				else if(((ObjectId)item.get("_id")).toString().endsWith("8")) {
-					item.put("card_type", "amex");
-				}
-				else if(((ObjectId)item.get("_id")).toString().endsWith("9")) {
-					item.put("card_type", "discover");
-				}
+			public Map<Object, Object> process(Map<Object, Object> item) throws Exception {
+				item.put("transaction_fee", Double.valueOf((String) item.get("amount")) * .035);
 				return item;
 			}
 		};
@@ -100,8 +95,8 @@ public class BatchMongoConfiguration {
 	public ItemWriter<Map<Object,Object>> itemWriter(DataSource dataSource) {
 		return new JdbcBatchItemWriterBuilder<Map<Object, Object>>().
 				sql("INSERT INTO credit_transaction (clicks, zone, sku, amount, " +
-						"quantity, mode, card_type) VALUES (:clicks, :zone, :sku, " +
-						":amount, :quantity, :mode, :card_type)").
+						"quantity, mode, transaction_fee) VALUES (:clicks, :zone, :sku, " +
+						":amount, :quantity, :mode, :transaction_fee)").
 				dataSource(dataSource).
 				columnMapped().
 				build();

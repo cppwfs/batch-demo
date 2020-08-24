@@ -71,6 +71,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-mongodb</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
@@ -96,7 +100,7 @@
 				<artifactId>dockerfile-maven-plugin</artifactId>
 				<version>${dockerfile-maven-plugin.version}</version>
 				<configuration>
-					<repository>${docker.image.prefix}/${project.artifactId}</repository>
+					<repository>${docker.image.prefix}/mongodemo2</repository>
 					<tag>${project.version}</tag>
 					<tag>latest</tag>
 					<buildArgs>
