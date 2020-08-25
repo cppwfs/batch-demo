@@ -14,6 +14,7 @@ This project reads purchase_orders from a mongo repository and calculates the fi
 ```
 ./mvnw -DskipTests dockerfile:build
 ```
+NOTE: Make sure you are using java 8 when building docker image.
 
 === Create the output table required for the demo
 Use the following DDL to create the table for a MySql DB
