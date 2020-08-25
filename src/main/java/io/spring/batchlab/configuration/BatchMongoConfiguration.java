@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.data.builder.MongoItemReaderBuilder;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.task.configuration.EnableTask;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,6 +46,9 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 public class BatchMongoConfiguration {
 
 	@Autowired
+	private BatchMongoProperties properties;
+
+	@Autowired
 	private MongoTemplate mongoTemplate;
 
 	@Autowired
@@ -55,28 +59,29 @@ public class BatchMongoConfiguration {
 
 	@Bean
 	public Job readReport(Step step) {
-		return jobBuilderFactory.get("readReport").
+		return jobBuilderFactory.get(this.properties.getJobName()).
 				incrementer(new RunIdIncrementer()).
 				flow(step).end().build();
 	}
 
 	@Bean
 	public Step step1(ItemReader itemReader, ItemProcessor itemProcessor, ItemWriter itemWriter) {
-		return stepBuilderFactory.get("step1").
-				<Map<Object, Object>, Map<Object, Object>>chunk(10).
+		return stepBuilderFactory.get(this.properties.getStepName()).
+				<Map<Object, Object>, Map<Object, Object>>chunk(this.properties.getChunkSize()).
 				reader(itemReader).
 				processor(itemProcessor).
-				writer(itemWriter).build();
+				writer(itemWriter).
+				build();
 	}
 	@Bean
 	public ItemReader<Map<Object, Object>> itemReader() {
 		return new MongoItemReaderBuilder().
 				template(mongoTemplate).
-				jsonQuery("{}").
-				name("purchase_orders").
-				sorts(Collections.singletonMap("_id", Sort.Direction.DESC)).
+				jsonQuery(this.properties.getQuery()).
+				name(this.properties.getItemReaderName()).
+				sorts(Collections.singletonMap(this.properties.getSortField(), Sort.Direction.DESC)).
 				targetType(Map.class).
-				collection("purchase_orders").
+				collection(this.properties.getCollection()).
 				build();
 	}
 
@@ -85,7 +90,8 @@ public class BatchMongoConfiguration {
 		return new ItemProcessor<Map<Object, Object>, Map<Object, Object>>() {
 			@Override
 			public Map<Object, Object> process(Map<Object, Object> item) throws Exception {
-				item.put("transaction_fee", Double.valueOf((String) item.get("amount")) * .035);
+				item.put("transaction_fee", Double.valueOf((String) item.get("amount")) *
+						Double.valueOf((String) item.get("quantity")) * properties.getFinanceRate());
 				return item;
 			}
 		};
@@ -94,9 +100,7 @@ public class BatchMongoConfiguration {
 	@Bean
 	public ItemWriter<Map<Object,Object>> itemWriter(DataSource dataSource) {
 		return new JdbcBatchItemWriterBuilder<Map<Object, Object>>().
-				sql("INSERT INTO credit_transaction (clicks, zone, sku, amount, " +
-						"quantity, mode, transaction_fee) VALUES (:clicks, :zone, :sku, " +
-						":amount, :quantity, :mode, :transaction_fee)").
+				sql(this.properties.getJdbcWriteString()).
 				dataSource(dataSource).
 				columnMapped().
 				build();

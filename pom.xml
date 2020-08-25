@@ -6,7 +6,7 @@
 
 	<groupId>io.spring</groupId>
 	<artifactId>mongodemo</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Mongo to JDBC examplels</name>
@@ -100,7 +100,7 @@
 				<artifactId>dockerfile-maven-plugin</artifactId>
 				<version>${dockerfile-maven-plugin.version}</version>
 				<configuration>
-					<repository>${docker.image.prefix}/mongodemo2</repository>
+					<repository>${docker.image.prefix}/mongodemo3</repository>
 					<tag>${project.version}</tag>
 					<tag>latest</tag>
 					<buildArgs>
