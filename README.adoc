@@ -1,6 +1,6 @@
 ==  Introduction
 
-This project reads purchase_orders from a mongo repository and identifies the credit card type and writes the results to a relational table.
+This project reads purchase_orders from a mongo repository and calculates the finance charge for the transaction, then stores the result in a jdbc data store.
 
 == Build the project
 
@@ -12,7 +12,7 @@ This project reads purchase_orders from a mongo repository and identifies the cr
 
 === To build the docker image
 ```
-./mvnw -DskipTests -U package dockerfile:build
+./mvnw -DskipTests dockerfile:build
 ```
 
 === Create the output table required for the demo
